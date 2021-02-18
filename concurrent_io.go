@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,7 +13,7 @@ import (
 
 var imageUrl = "https://loremflickr.com/g/1920/1080/cat"
 
-func MakeRequest(ch chan<- string) {
+func MakeRequest(wg *sync.WaitGroup) {
 	resp, _ := http.Get(imageUrl)
 	body, _ := ioutil.ReadAll(resp.Body)
 	fileName := fmt.Sprintf("./images/%s.jpg", uuid.New().String())
@@ -20,18 +21,22 @@ func MakeRequest(ch chan<- string) {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	ch <- fileName
+	fmt.Printf("done getting file %s\n", fileName)
+	wg.Done()
+}
+
+func DownloadFiles(iter int) {
+	wg := sync.WaitGroup{}
+	for i := 1; i <= iter; i++ {
+		wg.Add(1)
+		go MakeRequest(&wg)
+	}
+	wg.Wait()
+
 }
 
 func Concurrent() {
 	start := time.Now()
-	ch := make(chan string)
-	for i := 0; i <= 10; i++ {
-		go MakeRequest(ch)
-	}
-	for i := 0; i <= 10; i++ {
-		fmt.Println(<-ch)
-	}
-
+	DownloadFiles(10)
 	fmt.Printf("%.2fs elapsed \n", time.Since(start).Seconds())
 }
