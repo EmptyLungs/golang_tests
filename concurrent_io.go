@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -35,8 +36,18 @@ func DownloadFiles(iter int) {
 
 }
 
+func checkOrCreateImgDir() {
+	if _, err := os.Stat("./images"); os.IsNotExist(err) {
+		err := os.Mkdir("./images", os.FileMode(0777))
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	}
+}
+
 func Concurrent() {
 	start := time.Now()
+	checkOrCreateImgDir()
 	DownloadFiles(10)
 	fmt.Printf("%.2fs elapsed \n", time.Since(start).Seconds())
 }
