@@ -78,5 +78,6 @@ func ping(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/ping", ping)
 	http.HandleFunc("/log", createLog)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	http.HandleFunc("/echo", echo)
+	log.Fatal(http.ListenAndServe(":8081", nil))
 }
